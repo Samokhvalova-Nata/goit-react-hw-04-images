@@ -1,90 +1,94 @@
 import PropTypes from 'prop-types';
-import { Component } from "react";
-import { Button } from '../Button';
-import { Loader } from '../Loader';
-import { fetchGalleryWithQuery } from '../../services/pixabay-api';
 import { ImageGalleryItem } from '../ImageGalleryItem';
 import { Gallery } from './ImageGallery.styled';
-import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
-
-export class ImageGallery extends Component {
-    state = {
-        gallery: [],
-        error: null,
-        status: 'idle',
-        page: 1,
-    };
-
-    async componentDidUpdate(prevProps, prevState) {
-        const prevSearchQuery = prevProps.query;
-        const nextSearchQuery = this.props.query;
-
-        if (prevSearchQuery !== nextSearchQuery) {
-            this.setState({ status: 'pending', page: 1 });
-
-            try {
-                const { hits, total } = await fetchGalleryWithQuery(nextSearchQuery, 1);
-
-                if (total === 0) {
-                    const error = new Error('Sorry, there are no images matching your search query.')
-                    this.setState({ error, status: 'rejected' })
-                    return;
-                };
-
-                this.setState(prevState => {
-                    return {
-                        gallery: hits,
-                        status: 'resolved',
-                        page: prevState.page + 1,
-                    }
-                });
-            } catch (error) {this.setState({ error, status: 'rejected' });}
-        };
-    };
-
-    loadMoreHandler = async () => { 
-        try {
-            const { hits } = await fetchGalleryWithQuery(this.props.query, this.state.page);
-            this.setState(prevState => {
-                    return {
-                        gallery: [...prevState.gallery, ...hits],
-                        page: prevState.page + 1,
-                    }
-                });
-        } catch (error) {this.setState({ error, status: 'rejected' });}
-    };
-
-    render() {
-        const { gallery, error, status } = this.state;
-
-        if (status === 'pending') {
-            return <Loader/>
-        };
-
-        if (status === 'rejected') {
-            Notify.failure(`${error.message}`)
-            return;
-        };
-
-        if (status === 'resolved') {
-            return <>
-                    <Gallery>
-                    {gallery.map(({ id, webformatURL, tags, largeImageURL }) => (
-                        <ImageGalleryItem
-                            key={id}
-                            url={webformatURL}
-                            alt={tags}
-                            largeImage={largeImageURL}
-                        />
-                    ))}
-                    </Gallery>
-                    <Button onClick={this.loadMoreHandler}>Load more</Button>
-            </>
-        };
-    };
-}
+export const ImageGallery = ({ gallery }) => {
+    return (
+        <Gallery>
+            {gallery.map(({ id, webformatURL, tags, largeImageURL }) => (
+                <ImageGalleryItem
+                    key={id}
+                    url={webformatURL}
+                    alt={tags}
+                    largeImage={largeImageURL}
+                />
+            ))}
+        </Gallery>
+    );
+};
 
 ImageGallery.propTypes = {
-    query: PropTypes.string.isRequired,
-}
+    gallery: PropTypes.array.isRequired,
+};
+
+// export const ImageGallery = ({ query }) => {
+//     const [gallery, setGallery] = useState([]);
+//     const [error, setError] = useState(null);
+//     const [status, setStatus] = useState('idle');
+//     const [page, setPage] = useState(1);
+
+
+//     useEffect(() => {
+//         async function fetchImages() {
+//             setStatus('pending');
+//             setPage(1);
+
+//             try {
+//                 const { hits, total } = await fetchGalleryWithQuery(query, 1);
+
+//                 if (total === 0) {
+//                     const error = new Error('Sorry, there are no images matching your search query.')
+//                     setStatus('rejected');
+//                     setError(error);
+//                     return;
+//                 };
+
+//                 setGallery(hits);
+//                 setStatus('resolved');
+//                 setPage(prev => prev + 1);
+//             } catch (error) {
+//                 setStatus('rejected');
+//                 setError(error);
+//             };
+//         };
+
+//         if(query) fetchImages();
+        
+//     }, [query]);
+
+//     const loadMoreHandler = async () => { 
+//         try {
+//             const { hits } = await fetchGalleryWithQuery(query, page);
+//             setGallery(prev => [...prev, ...hits]);
+//             setPage(prev => prev + 1);
+//         } catch (error) {
+//             setStatus('rejected');
+//             setError(error);
+//         };
+//     };
+
+//         if (status === 'pending') {
+//             return <Loader/>
+//         };
+
+//         if (status === 'rejected') {
+//             Notify.failure(`${error.message}`)
+//             return;
+//         };
+
+//         if (status === 'resolved') {
+//             return <>
+//                     <Gallery>
+//                     {gallery.map(({ id, webformatURL, tags, largeImageURL }) => (
+//                         <ImageGalleryItem
+//                             key={id}
+//                             url={webformatURL}
+//                             alt={tags}
+//                             largeImage={largeImageURL}
+//                         />
+//                     ))}
+//                     </Gallery>
+//                     <Button onClick={loadMoreHandler}>Load more</Button>
+//             </>
+//         };
+// };

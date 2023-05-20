@@ -1,32 +1,25 @@
 import PropTypes from 'prop-types';
-import { Component } from "react";
+import { useState } from "react";
 import { Header, Form, Button, SearchIcon, ButtonLabel, Input } from './Searchbar.styled';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
-export class Searchbar extends Component  {
-    state = {
-        query: '',
-    };
+export const Searchbar = ({ onSubmit }) => {
+    const [query, setQuery] = useState('');
 
-    handleInputChange = e => {
-        this.setState({ query: e.currentTarget.value });
-    };
+    const handleInputChange = e => setQuery(e.currentTarget.value);
 
-    handleSubmit = e => {
+    const handleSubmit = e => {
         e.preventDefault();
-        if (this.state.query.trim() === '') {
+        if (query.trim() === '') {
             Notify.failure('Sorry, enter something in search line.');
             return;
         }
+        onSubmit(query);
+    };
 
-        this.props.onSubmit(this.state.query);
-        // this.setState({ query: '' });
-    }
-
-    render() {
         return (
             <Header>
-                <Form onSubmit={this.handleSubmit}>
+                <Form onSubmit={handleSubmit}>
                     <Button type="submit"
                         aria-label="Search">
                         <SearchIcon size={20} />
@@ -34,14 +27,13 @@ export class Searchbar extends Component  {
                     </Button>
                     <Input autoComplete="off"
                         type="text"
-                        value={this.state.query}
-                        onChange={this.handleInputChange}
+                        value={query}
+                        onChange={handleInputChange}
                         autoFocus
                         placeholder="Search images and photos" />
                 </Form>
             </Header>
         );
-    };
 };
 
 Searchbar.propTypes = {
