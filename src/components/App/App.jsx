@@ -39,8 +39,12 @@ export const App = () => {
     };
   }, [page, query]);
   
-  const searchFormSubmitHandler = query => {
-    setQuery(query);
+  const searchFormSubmitHandler = searchQuery => {
+    if (searchQuery === query) {
+      Notify.failure(`This word has already been searched for. Try another one.`)
+      return;
+    }
+    setQuery(searchQuery);
     setPage(1);
     setGallery([]);
     setError(null);
